@@ -1,49 +1,50 @@
-const STATUS_ACTIVE = "active";
-const STATUS_IDLE = "idle";
-const STATUS_HIDDEN = "hidden";
-
-let DOC_HIDDEN: string;
-let VISIBILITY_CHANGE_EVENT: string = void 0;
-
-export namespace Events {
-    const store = {};
-    let setListener: Function;
-
-    export function attach(event: string, callback: Function) {
+"use strict";
+var STATUS_ACTIVE = "active";
+var STATUS_IDLE = "idle";
+var STATUS_HIDDEN = "hidden";
+var DOC_HIDDEN;
+var VISIBILITY_CHANGE_EVENT = void 0;
+var Events;
+(function (Events) {
+    var store = {};
+    var setListener;
+    function attach(event, callback) {
         if (!store[event]) {
             store[event] = [];
         }
         console.log("seko");
         store[event].push(callback);
     }
-
-    export function fire(event: string, args?: any[]) {
+    Events.attach = attach;
+    function fire(event, args) {
         if (store[event]) {
-            store[event].forEach((callback) => {
-                callback(...args);
+            store[event].forEach(function (callback) {
+                callback.apply(void 0, args);
             });
         }
     }
-
-    export function remove(event: string, callback: Function) {
+    Events.fire = fire;
+    function remove(event, callback) {
         if (store[event]) {
-            store[event] = store[event].filter((savedCallback) => {
+            store[event] = store[event].filter(function (savedCallback) {
                 return callback !== savedCallback;
             });
         }
     }
-
-    export function dom(element: any, event: string, callback: Function) {
+    Events.remove = remove;
+    function dom(element, event, callback) {
         if (!setListener) {
             if (element.addEventListener) {
                 setListener = function (el, ev, fn) {
                     return el.addEventListener(ev, fn, false);
                 };
-            } else if (typeof element["attachEvent"] === "function") {
+            }
+            else if (typeof element["attachEvent"] === "function") {
                 setListener = function (el, ev, fn) {
                     return el.attachEvent("on" + ev, fn, false);
                 };
-            } else {
+            }
+            else {
                 setListener = function (el, ev, fn) {
                     return el["on" + ev] = fn;
                 };
@@ -51,114 +52,97 @@ export namespace Events {
         }
         return setListener(element, event, callback);
     }
-
-}
-
-export interface IdleInfo {
-    isIdle: boolean;
-    idleFor: number;
-    timeLeft: number;
-    timeLeftPer: number;
-}
-
-export class Timer {
-    private token: number;
-    stopped: boolean = false;
-
-    constructor(private ifvisible: IfVisible,
-                private seconds: number,
-                private callback: Function) {
+    Events.dom = dom;
+})(Events = exports.Events || (exports.Events = {}));
+var Timer = (function () {
+    function Timer(ifvisible, seconds, callback) {
+        var _this = this;
+        this.ifvisible = ifvisible;
+        this.seconds = seconds;
+        this.callback = callback;
+        this.stopped = false;
         this.start();
-
-        this.ifvisible.on("statusChanged", (data: any) => {
-            if (this.stopped === false) {
+        this.ifvisible.on("statusChanged", function (data) {
+            if (_this.stopped === false) {
                 if (data.status === STATUS_ACTIVE) {
-                    this.start();
-                } else {
-                    this.pause();
+                    _this.start();
+                }
+                else {
+                    _this.pause();
                 }
             }
         });
     }
-
-    private start() {
+    Timer.prototype.start = function () {
         this.stopped = false;
         clearInterval(this.token);
         this.token = setInterval(this.callback, this.seconds * 1000);
-    }
-
-    public stop() {
+    };
+    Timer.prototype.stop = function () {
         this.stopped = true;
         clearInterval(this.token);
-    }
-
-    public resume() {
+    };
+    Timer.prototype.resume = function () {
         this.start();
-    }
-
-    public pause() {
+    };
+    Timer.prototype.pause = function () {
         this.stop();
-    }
-}
-
-export const IE = (function () {
-    let undef,
-        v = 3,
-        div = document.createElement("div"),
-        all = div.getElementsByTagName("i");
-
-    while (
-        div.innerHTML = "<!--[if gt IE " + (++v) + "]><i></i><![endif]-->",
-            all[0]
-        );
-
+    };
+    return Timer;
+}());
+exports.Timer = Timer;
+exports.IE = (function () {
+    var undef, v = 3, div = document.createElement("div"), all = div.getElementsByTagName("i");
+    while (div.innerHTML = "<!--[if gt IE " + (++v) + "]><i></i><![endif]-->",
+        all[0])
+        ;
     return v > 4 ? v : undef;
 }());
-
-
-export class IfVisible {
-    public status: string = STATUS_ACTIVE;
-    public VERSION: string = '';
-    private timer: any;
-    private idleTime: number = 30000;
-    private idleStartedTime: number;
-
-
-    constructor(private root, private doc) {
-        let BLUR_EVENT = "blur";
-        let FOCUS_EVENT = "focus";
-
+var IfVisible = (function () {
+    function IfVisible(root, doc) {
+        var _this = this;
+        this.root = root;
+        this.doc = doc;
+        this.status = STATUS_ACTIVE;
+        this.VERSION = '';
+        this.idleTime = 30000;
+        var BLUR_EVENT = "blur";
+        var FOCUS_EVENT = "focus";
         // Find correct browser events
         if (this.doc.hidden !== void 0) {
             DOC_HIDDEN = "hidden";
             VISIBILITY_CHANGE_EVENT = "visibilitychange";
-        } else if (this.doc["mozHidden"] !== void 0) {
+        }
+        else if (this.doc["mozHidden"] !== void 0) {
             DOC_HIDDEN = "mozHidden";
             VISIBILITY_CHANGE_EVENT = "mozvisibilitychange";
-        } else if (this.doc["msHidden"] !== void 0) {
+        }
+        else if (this.doc["msHidden"] !== void 0) {
             DOC_HIDDEN = "msHidden";
             VISIBILITY_CHANGE_EVENT = "msvisibilitychange";
-        } else if (this.doc["webkitHidden"] !== void 0) {
+        }
+        else if (this.doc["webkitHidden"] !== void 0) {
             DOC_HIDDEN = "webkitHidden";
             VISIBILITY_CHANGE_EVENT = "webkitvisibilitychange";
         }
-
         if (DOC_HIDDEN === void 0) {
-            if (IE < 9) {
+            if (exports.IE < 9) {
                 BLUR_EVENT = "focusout";
             }
-            Events.dom(this.root, BLUR_EVENT, () => {
-                return this.blur();
+            Events.dom(this.root, BLUR_EVENT, function () {
+                return _this.blur();
             });
-            Events.dom(this.root, FOCUS_EVENT, () => {
-                return this.focus();
+            Events.dom(this.root, FOCUS_EVENT, function () {
+                return _this.focus();
             });
-        } else {
-            const trackChange = () => {
-                if (this.doc[DOC_HIDDEN]) {
-                    this.blur();
-                } else {
-                    this.focus();
+        }
+        else {
+            var trackChange = function () {
+                if (_this.doc[DOC_HIDDEN]) {
+                    _this.blur();
+                }
+                else {
+                    _this.focus();
                 }
             };
             trackChange(); // get initial status
@@ -167,62 +151,52 @@ export class IfVisible {
         this.startIdleTimer();
         this.trackIdleStatus();
     }
-
-    startIdleTimer(event?: Event) {
+    IfVisible.prototype.startIdleTimer = function (event) {
+        var _this = this;
         // Prevents Phantom events.
         // @see https://github.com/serkanyersen/ifvisible.js/pull/37
         if (event instanceof MouseEvent && event.movementX === 0 && event.movementY === 0) {
             return;
         }
-
         clearTimeout(this.timer);
-
         if (this.status === STATUS_IDLE) {
             this.wakeup();
         }
-
         this.idleStartedTime = +(new Date());
-        this.timer = setTimeout(() => {
-            if (this.status === STATUS_ACTIVE || this.status === STATUS_HIDDEN) {
-                return this.idle();
+        this.timer = setTimeout(function () {
+            if (_this.status === STATUS_ACTIVE || _this.status === STATUS_HIDDEN) {
+                return _this.idle();
             }
         }, this.idleTime);
-    }
-
-    trackIdleStatus() {
+    };
+    IfVisible.prototype.trackIdleStatus = function () {
         Events.dom(this.doc, "mousemove", this.startIdleTimer.bind(this));
         Events.dom(this.doc, "mousedown", this.startIdleTimer.bind(this));
         Events.dom(this.doc, "keyup", this.startIdleTimer.bind(this));
         Events.dom(this.doc, "touchstart", this.startIdleTimer.bind(this));
         Events.dom(this.root, "scroll", this.startIdleTimer.bind(this));
-
         // this.focus(wakeUp);
         // this.wakeup(wakeUp);
-    }
-
-    on(event: string, callback: (data: any) => any): IfVisible {
+    };
+    IfVisible.prototype.on = function (event, callback) {
         Events.attach(event, callback);
         return this;
-    }
-
-    off(event: string, callback?: any): IfVisible {
+    };
+    IfVisible.prototype.off = function (event, callback) {
         Events.remove(event, callback);
         return this;
-    }
-
-    setIdleDuration(seconds: number): IfVisible {
+    };
+    IfVisible.prototype.setIdleDuration = function (seconds) {
         this.idleTime = seconds * 1000;
         this.startIdleTimer();
         return this;
-    }
-
-    getIdleDuration(): number {
+    };
+    IfVisible.prototype.getIdleDuration = function () {
         return this.idleTime;
-    }
-
-    getIdleInfo(): IdleInfo {
-        let now = +(new Date());
-        let res: IdleInfo;
+    };
+    IfVisible.prototype.getIdleInfo = function () {
+        var now = +(new Date());
+        var res;
         if (this.status === STATUS_IDLE) {
             res = {
                 isIdle: true,
@@ -230,72 +204,75 @@ export class IfVisible {
                 timeLeft: 0,
                 timeLeftPer: 100
             };
-        } else {
-            let timeLeft = (this.idleStartedTime + this.idleTime) - now;
+        }
+        else {
+            var timeLeft = (this.idleStartedTime + this.idleTime) - now;
             res = {
                 isIdle: false,
                 idleFor: now - this.idleStartedTime,
-                timeLeft,
+                timeLeft: timeLeft,
                 timeLeftPer: parseFloat((100 - (timeLeft * 100 / this.idleTime)).toFixed(2))
             };
         }
         return res;
-    }
-
-    idle(callback?: (data: any) => any): IfVisible {
+    };
+    IfVisible.prototype.idle = function (callback) {
         if (callback) {
             this.on("idle", callback);
-        } else {
+        }
+        else {
             this.status = STATUS_IDLE;
             Events.fire("idle");
-            Events.fire("statusChanged", [{status: this.status}]);
+            Events.fire("statusChanged", [{ status: this.status }]);
         }
         return this;
-    }
-
-    blur(callback?: (data: any) => any): IfVisible {
+    };
+    IfVisible.prototype.blur = function (callback) {
         if (callback) {
             this.on("blur", callback);
-        } else {
+        }
+        else {
             this.status = STATUS_HIDDEN;
             Events.fire("blur");
-            Events.fire("statusChanged", [{status: this.status}]);
+            Events.fire("statusChanged", [{ status: this.status }]);
         }
         return this;
-    }
-
-    focus(callback?: (data: any) => any): IfVisible {
+    };
+    IfVisible.prototype.focus = function (callback) {
         if (callback) {
             this.on("focus", callback);
-        } else if (this.status !== STATUS_ACTIVE) {
+        }
+        else if (this.status !== STATUS_ACTIVE) {
             this.status = STATUS_ACTIVE;
             Events.fire("focus");
             Events.fire("wakeup");
-            Events.fire("statusChanged", [{status: this.status}]);
+            Events.fire("statusChanged", [{ status: this.status }]);
         }
         return this;
-    }
-
-    wakeup(callback?: (data: any) => any): IfVisible {
+    };
+    IfVisible.prototype.wakeup = function (callback) {
         if (callback) {
             this.on("wakeup", callback);
-        } else if (this.status !== STATUS_ACTIVE) {
+        }
+        else if (this.status !== STATUS_ACTIVE) {
             this.status = STATUS_ACTIVE;
             Events.fire("wakeup");
-            Events.fire("statusChanged", [{status: this.status}]);
+            Events.fire("statusChanged", [{ status: this.status }]);
         }
         return this;
-    }
-
-    onEvery(seconds: number, callback: Function): Timer {
+    };
+    IfVisible.prototype.onEvery = function (seconds, callback) {
         return new Timer(this, seconds, callback);
-    }
-
-    now(check?: string): boolean {
+    };
+    IfVisible.prototype.now = function (check) {
         if (check !== void 0) {
             return this.status === check;
-        } else {
+        }
+        else {
             return this.status === STATUS_ACTIVE;
         }
-    }
-}
+    };
+    return IfVisible;
+}());
+exports.IfVisible = IfVisible;
+//# sourceMappingURL=ifvisible.js.map

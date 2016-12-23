@@ -1,4 +1,4 @@
-import { IfVisible } from "./ifvisible";
+import { IfVisible } from "./src/ifvisible";
 
 declare var global: any;
 const root = typeof self === "object" && self.self === self && self ||
@@ -6,3 +6,4 @@ const root = typeof self === "object" && self.self === self && self ||
              this;
 
 export const ifvisible = new IfVisible(root, document);
+export * from "./src/ifvisible";

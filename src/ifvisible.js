@@ -12,7 +12,7 @@ var Events;
         if (!store[event]) {
             store[event] = [];
         }
-        console.log("seko");
+        // console.log("seko");
         store[event].push(callback);
     }
     Events.attach = attach;

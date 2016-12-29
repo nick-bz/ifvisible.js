@@ -13,7 +13,7 @@ export namespace Events {
         if (!store[event]) {
             store[event] = [];
         }
-        console.log("seko");
+        // console.log("seko");
         store[event].push(callback);
     }
 

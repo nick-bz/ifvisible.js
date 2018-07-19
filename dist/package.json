@@ -2,14 +2,7 @@
   "name": "ifvisible.js",
   "version": "2.0.7",
   "description": "Crossbrowser & lightweight way to check if user is looking at the page or interacting with it. (wrapper around HTML5 visibility api)",
-  "main": "dist/ifvisible.js",
-  "scripts": {
-    "start": "webpack",
-    "build": "PURPOSE=production webpack",
-    "lint": "find src -type f -name '*.ts' | xargs tslint",
-    "docs": "docco src/*.ts --output docs/docco",
-    "prepublish": "npm run build && npm run docs"
-  },
+  "main": "bundles/ifvisible.js.umd.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/serkanyersen/ifvisible.js.git"
@@ -40,12 +33,6 @@
   },
   "homepage": "https://github.com/serkanyersen/ifvisible.js",
   "$schema": "./node_modules/ng-packagr/package.schema.json",
-  "ngPackage": {
-    "$schema": "./node_modules/ng-packagr/ng-package.schema.json",
-    "lib": {
-      "entryFile": "index.ts"
-    }
-  },
   "devDependencies": {
     "@angular/compiler": "^6.0.9",
     "@angular/compiler-cli": "^6.0.9",
@@ -57,5 +44,17 @@
     "typescript": "~2.7.2",
     "webpack": "^1.15.0",
     "webpack-shell-plugin": "^0.4.9"
+  },
+  "module": "fesm5/ifvisible.js.js",
+  "es2015": "fesm2015/ifvisible.js.js",
+  "esm5": "esm5/ifvisible.js.js",
+  "esm2015": "esm2015/ifvisible.js.js",
+  "fesm5": "fesm5/ifvisible.js.js",
+  "fesm2015": "fesm2015/ifvisible.js.js",
+  "typings": "ifvisible.js.d.ts",
+  "metadata": "ifvisible.js.metadata.json",
+  "sideEffects": false,
+  "dependencies": {
+    "tslib": "^1.9.0"
   }
 }

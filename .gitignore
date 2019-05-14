@@ -4,6 +4,7 @@
 
 node_modules
 dist
+.idea
 
 # Vim
 .*.s[a-w][a-z]

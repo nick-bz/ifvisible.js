@@ -42,7 +42,7 @@ var config = {
     devtool: "inline-source-map",
     output: {
         path: path.resolve(__dirname, "dist"),
-        filename: "ifvisible.js",
+        filename: "index.js",
         libraryTarget: "umd"
     },
     plugins: [

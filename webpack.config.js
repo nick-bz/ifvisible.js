@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const webpack = require("webpack");
 const version = JSON.parse(fs.readFileSync(path.join(__dirname, "package.json"))).version;
-const WebpackShellPlugin = require("webpack-shell-plugin");
+const WebpackShellPluginNext = require('webpack-shell-plugin-next');
 
 var config = {
     // entry: {
@@ -65,9 +65,11 @@ if (process.env.PURPOSE === "production") {
     config.watch = false;
 }
 
-config.plugins.push(new WebpackShellPlugin({
+config.plugins.push(new WebpackShellPluginNext({
     dev: false,
-    onBuildEnd: ['cp ./dist/ifvisible.js ./docs/']
+    onBuildEnd:{
+        scripts: ['cp ./dist/index.js ./docs/']
+    }
 }));
 
 module.exports = config;
